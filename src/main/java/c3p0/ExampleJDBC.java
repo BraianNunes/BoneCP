@@ -1,6 +1,7 @@
 package c3p0;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import model.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -11,7 +12,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,6 +41,10 @@ public class ExampleJDBC {
         ApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
         jdbcTemplate = (JdbcTemplate) ctx.getBean("jdbcC3P0Template");
         final String sql = "INSERT INTO record(description,content) VALUES(?,?)";
+        final Record[] paramList = new Record[10000];
+        for (int i = 0; i < 10000; i++) {
+            paramList[i] = new Record("C3P0测试description" + i, "C3P0测试content" + i);
+        }
         // 批量更新
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             public int getBatchSize() {
@@ -45,8 +52,8 @@ public class ExampleJDBC {
             }
 
             public void setValues(PreparedStatement ps, int index) throws SQLException {
-                ps.setString(1, "C3P0测试description" + index);
-                ps.setString(2, "C3P0测试content" + index);
+                ps.setString(1, paramList[index].getDescription());
+                ps.setString(2, paramList[index].getContent());
             }
         });
         // 关闭连接池

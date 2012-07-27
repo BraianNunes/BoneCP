@@ -44,7 +44,7 @@
         <!--c3p0将建一张名为Test的空表，并使用其自带的查询语句进行测试。
           如果定义了这个参数那么属性preferredTestQuery将被忽略。
           你不能在这张Test表上进行任何操作，它将只供c3p0测试使用。Default: null-->
-        <property name="automaticTestTable">tb_c3p0_test</property>
+        <property name="automaticTestTable">t_c3p0_test</property>
 
         <!--定义所有连接测试都执行的测试语句。在使用连接测试的情况下这个一显著提高测试速度。
        注意：测试的表必须在初始数据源的时候就存在。Default: null-->

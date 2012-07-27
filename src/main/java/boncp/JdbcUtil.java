@@ -40,12 +40,18 @@ public class JdbcUtil {
     public static void initManualDataSource() throws Exception {
         if (dataSource == null) {
             log.info("The first time to init origin pool");
-            Class.forName("org.hsqldb.jdbcDriver"); 	// load the DB driver
-            dataSource = new BoneCPDataSource();  // create a new datasource object
-            dataSource.setJdbcUrl("jdbc:hsqldb:mem:test");	// set the JDBC url
-            dataSource.setUsername("sa");			// set the username
-            dataSource.setPassword("");				// set the password
-            dataSource.setAcquireIncrement(10);				// (other config options here)
+            // load the DB driver
+            Class.forName("com.mysql.jdbc.Driver");
+            // create a new datasource object
+            dataSource = new BoneCPDataSource();
+            // set the JDBC url
+            dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8");
+            // set the username
+            dataSource.setUsername("root");
+            // set the password
+            dataSource.setPassword("123456");
+            // (other config options here)
+            dataSource.setAcquireIncrement(10);
         }
     }
 
@@ -70,6 +76,6 @@ public class JdbcUtil {
 
     private static BoneCPDataSource getSpringConnection() throws Exception {
         ApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
-        return (BoneCPDataSource) ctx.getBean("mainDataSource");
+        return (BoneCPDataSource) ctx.getBean("dataSource");
     }
 }

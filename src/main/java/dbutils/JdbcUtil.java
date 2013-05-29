@@ -1,4 +1,4 @@
-package c3p0;
+package dbutils;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.slf4j.Logger;

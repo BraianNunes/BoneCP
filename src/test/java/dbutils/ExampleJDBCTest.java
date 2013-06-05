@@ -15,12 +15,8 @@
  */
 package dbutils;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.sql.Connection;
 
 /**
  * Description of this file.
@@ -33,7 +29,7 @@ public class ExampleJDBCTest {
 
     @BeforeClass
     public static void init() {
-        JdbcUtil.initDataSoucePool();
+        JdbcUtil.initDataSourcePool();
     }
 
     @Test

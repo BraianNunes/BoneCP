@@ -4,6 +4,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 
 /**
@@ -18,11 +19,15 @@ public class JdbcUtil {
     private static Logger log = LoggerFactory.getLogger(JdbcUtil.class);
     private static ComboPooledDataSource dataSource;
 
-    public static ComboPooledDataSource initDataSoucePool() {
+    public synchronized static ComboPooledDataSource initDataSourcePool() {
         if (dataSource == null) {
             log.info("The first time to init origin pool");
             dataSource = new ComboPooledDataSource("dataSource");
         }
+        return dataSource;
+    }
+
+    public DataSource getDataSource() {
         return dataSource;
     }
 

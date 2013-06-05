@@ -61,7 +61,7 @@ public class ExampleJDBC {
     private static final Logger log = LoggerFactory.getLogger(ExampleJDBC.class);
 
     public static void main(String[] args) {
-        JdbcUtil.initDataSoucePool();
+        JdbcUtil.initDataSourcePool();
         getBeanListData();
     }
 
@@ -112,7 +112,7 @@ public class ExampleJDBC {
     /**
      * 新增和更新例子
      */
-    public static void insertAndUpdateData() {
+    public static void insertAndUpdateData() throws SQLException {
         Connection conn = getConnection();
         QueryRunner qr = new QueryRunner();
         try {
@@ -126,8 +126,9 @@ public class ExampleJDBC {
             System.out.println("updated " + updates + " data");
         } catch (SQLException e) {
             e.printStackTrace();
+            conn.rollback();
         } finally {
-            DbUtils.closeQuietly(conn);
+            DbUtils.close(conn);
         }
     }
 

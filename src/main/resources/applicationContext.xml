@@ -45,7 +45,7 @@
         <property name="maxIdleTime" value="1800"/>
         <property name="initialPoolSize" value="15"/>
         <property name="minPoolSize" value="10"/>
-        <property name="maxPoolSize" value="30"/>
+        <property name="maxPoolSize" value="100"/>
         <property name="maxStatements" value="200"/>
         <property name="maxStatementsPerConnection" value="5"/>
         <property name="numHelperThreads" value="8"/>

@@ -15,6 +15,7 @@
  */
 package dbutils;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import model.Student;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ProxyFactory;
@@ -62,6 +63,10 @@ public class ExampleJDBC {
 
     public static void main(String[] args) {
         JdbcUtil.initDataSourcePool();
+        ComboPooledDataSource ds = ((ComboPooledDataSource)JdbcUtil.getDataSource());
+        ds.setJdbcUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=UTF-8");
+        ds.setUser("root");
+        ds.setPassword("123456");
         getBeanListData();
     }
 

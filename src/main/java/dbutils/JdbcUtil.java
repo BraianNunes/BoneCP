@@ -27,7 +27,7 @@ public class JdbcUtil {
         return dataSource;
     }
 
-    public DataSource getDataSource() {
+    public static DataSource getDataSource() {
         return dataSource;
     }
 

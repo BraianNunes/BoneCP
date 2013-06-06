@@ -15,8 +15,7 @@
  */
 package dbutils;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +48,7 @@ import org.slf4j.LoggerFactory;
 public class DbUtilsTemplate {
     private DataSource dataSource;
     private QueryRunner queryRunner;
+    private boolean pmdKnownBroken = false;
     private static final Logger LOG = LoggerFactory.getLogger(DbUtilsTemplate.class);
 
     public void setDataSource(DataSource dataSource) {
@@ -56,18 +56,17 @@ public class DbUtilsTemplate {
     }
 
     /**
-     * 执行sql语句,无法保证事务不推荐使用
+     * 执行sql语句
      *
      * @param sql sql语句
      * @return 受影响的行数
-     * @deprecated
      */
     public int update(String sql) throws SQLException {
         return update(sql, null);
     }
 
     /**
-     * 执行sql语句,无法保证事务不推荐使用
+     * 执行sql语句
      * <code>
      * executeUpdate("update user set username = 'kitty' where username = ?", "hello kitty");
      * </code>
@@ -75,7 +74,6 @@ public class DbUtilsTemplate {
      * @param sql   sql语句
      * @param param 参数
      * @return 受影响的行数
-     * @deprecated
      */
     public int update(String sql, Object param) throws SQLException {
         return update(sql, new Object[]{param});
@@ -114,12 +112,114 @@ public class DbUtilsTemplate {
     }
 
     /**
-     * 执行批量sql语句,无法保证事务不推荐使用
+     * 执行sql语句
+     *
+     * @param sql sql语句
+     * @return 受影响的行数
+     */
+    public long insert(String sql) throws SQLException {
+        return insert(sql, null);
+    }
+
+    /**
+     * 执行sql语句
+     * <code>
+     * executeUpdate("insert user(name, age) values(?,?));
+     * </code>
+     *
+     * @param sql   sql语句
+     * @param param 参数
+     * @return 受影响的行数
+     */
+    public long insert(String sql, Object param) throws SQLException {
+        return insert(sql, new Object[]{param});
+    }
+
+    /**
+     * 插入一条记录，并返回自增主键
+     *
+     * @param sql    sql语句
+     * @param params 参数数组
+     * @return 自增主键(如果没有更新成功, 返回-1或跑出异常)
+     * @throws SQLException
+     */
+    public long insert(String sql, Object[] params) throws SQLException {
+        long result = -1L;
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = dataSource.getConnection();
+            stmt = conn.prepareStatement(sql);
+            fillStatement(stmt, params);
+            int affectCount = stmt.executeUpdate();
+            if (affectCount <= 0) return -1L;
+            rs = stmt.getGeneratedKeys();
+            result = rs.next() ? rs.getLong(1) : -1;
+            conn.commit();
+        } catch (SQLException e) {
+            LOG.error("Error occured while attempting to insert data", e);
+            if (conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            DbUtils.closeQuietly(conn, stmt, rs);
+        }
+        return result;
+    }
+
+    public void fillStatement(PreparedStatement stmt, Object... params) throws SQLException {
+
+        // check the parameter count, if we can
+        ParameterMetaData pmd = null;
+        if (!pmdKnownBroken) {
+            pmd = stmt.getParameterMetaData();
+            int stmtCount = pmd.getParameterCount();
+            int paramsCount = params == null ? 0 : params.length;
+
+            if (stmtCount != paramsCount) {
+                throw new SQLException("Wrong number of parameters: expected "
+                        + stmtCount + ", was given " + paramsCount);
+            }
+        }
+
+        // nothing to do here
+        if (params == null) {
+            return;
+        }
+
+        for (int i = 0; i < params.length; i++) {
+            if (params[i] != null) {
+                stmt.setObject(i + 1, params[i]);
+            } else {
+                // VARCHAR works with many drivers regardless
+                // of the actual column type. Oddly, NULL and
+                // OTHER don't work with Oracle's drivers.
+                int sqlType = Types.VARCHAR;
+                if (!pmdKnownBroken) {
+                    try {
+                        /*
+                         * It's not possible for pmdKnownBroken to change from
+                         * true to false, (once true, always true) so pmd cannot
+                         * be null here.
+                         */
+                        sqlType = pmd.getParameterType(i + 1);
+                    } catch (SQLException e) {
+                        pmdKnownBroken = true;
+                    }
+                }
+                stmt.setNull(i + 1, sqlType);
+            }
+        }
+    }
+
+    /**
+     * 执行批量sql语句
      *
      * @param sql    sql语句
      * @param params 二维参数数组
      * @return 受影响的行数的数组
-     * @deprecated
      */
     public int[] batchUpdate(String sql, Object[][] params) throws SQLException {
         queryRunner = new QueryRunner();

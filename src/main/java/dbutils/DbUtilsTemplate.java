@@ -55,6 +55,10 @@ public class DbUtilsTemplate {
         this.dataSource = dataSource;
     }
 
+    public void setPmdKnownBroken(boolean pmdKnownBroken) {
+        this.pmdKnownBroken = pmdKnownBroken;
+    }
+
     /**
      * 执行sql语句
      *
